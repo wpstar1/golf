@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2ecc71">
+    <title>⛳ 골프 스코어 라이브</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .app {
+            width: 100%;
+            min-height: 100vh;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            padding: 20px 15px 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+
+        .tab-bar {
+            display: flex;
+            background: rgba(0,0,0,0.1);
+            border-radius: 25px;
+            padding: 4px;
+            margin-top: 10px;
+        }
+
+        .tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            padding: 10px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #27ae60;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .screen {
+            display: none;
+            padding: 15px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .camera-section {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .camera-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: black;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        #video, #canvas, #uploadedImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+        }
+
+        .camera-placeholder .icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 1em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .btn-full {
+            grid-column: 1 / -1;
+        }
+
+        .score-card {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+
+        .course-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 0.85em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .input-group input, .input-group select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #2ecc71;
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
+        }
+
+        .players-list {
+            margin-top: 15px;
+        }
+
+        .player-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .player-card:active {
+            transform: scale(0.98);
+        }
+
+        .player-rank {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .player-rank.first {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.75em;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-value.under {
+            color: #e74c3c;
+        }
+
+        .stat-value.even {
+            color: #2c3e50;
+        }
+
+        .stat-value.over {
+            color: #3498db;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        .add-player-card {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .add-player-card:active {
+            transform: scale(0.95);
+        }
+
+        .preview-container {
+            position: relative;
+            width: 100%;
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        #previewCanvas {
+            width: 100%;
+            display: block;
+        }
+
+        .overlay-position-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .position-btn {
+            padding: 15px 10px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.5em;
+            transition: all 0.3s;
+        }
+
+        .position-btn.active {
+            background: #2ecc71;
+            border-color: #2ecc71;
+            color: white;
+        }
+
+        .floating-menu {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .fab {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .fab:active {
+            transform: scale(0.9);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: flex-end;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .close-modal {
+            background: #f0f0f0;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #uploadInput {
+            display: none;
+        }
+
+        .bottom-nav {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 5px;
+            border: none;
+            background: none;
+            color: #999;
+            transition: all 0.3s;
+        }
+
+        .nav-item.active {
+            color: #2ecc71;
+        }
+
+        .nav-item .icon {
+            font-size: 1.5em;
+        }
+
+        .nav-item .label {
+            font-size: 0.75em;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <div class="header-top">
+                <h1>⛳ 골프 스코어 라이브</h1>
+                <button class="menu-btn">⚙️</button>
+            </div>
+            <div class="tab-bar">
+                <button class="tab active" data-screen="camera">📸 카메라</button>
+                <button class="tab" data-screen="score">🏌️ 스코어</button>
+                <button class="tab" data-screen="preview">📱 미리보기</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 카메라 스크린 -->
+            <div class="screen active" id="camera-screen">
+                <div class="camera-section">
+                    <div class="camera-container">
+                        <video id="video" style="display: none;"></video>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        <img id="uploadedImage" style="display: none;">
+                        <div class="camera-placeholder" id="placeholder">
+                            <div class="icon">📷</div>
+                            <p>사진을 찍거나 업로드하세요</p>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="startCamera">
+                            📹 카메라 시작
+                        </button>
+                        <button class="btn btn-warning" id="uploadPhoto">
+                            📁 사진 선택
+                        </button>
+                        <button class="btn btn-success btn-full" id="capturePhoto" style="display: none;">
+                            📸 사진 찍기
+                        </button>
+                    </div>
+                </div>
+
+                <div class="score-card">
+                    <h3 style="margin-bottom: 15px;">🏌️ 클럽 & 코스 정보</h3>
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>클럽 이름</label>
+                        <input type="text" id="clubName" value="꿀잼" placeholder="예: 꿀잼, 버디">
+                    </div>
+                    <div class="course-info">
+                        <div class="input-group">
+                            <label>골프장</label>
+                            <input type="text" id="courseName" value="제주 나인브릿지">
+                        </div>
+                        <div class="input-group">
+                            <label>현재 홀</label>
+                            <select id="holeNumber">
+                                <option value="1">1번 홀</option>
+                                <option value="2">2번 홀</option>
+                                <option value="3">3번 홀</option>
+                                <option value="4" selected>4번 홀</option>
+                                <option value="5">5번 홀</option>
+                                <option value="6">6번 홀</option>
+                                <option value="7">7번 홀</option>
+                                <option value="8">8번 홀</option>
+                                <option value="9">9번 홀</option>
+                                <option value="10">10번 홀</option>
+                                <option value="11">11번 홀</option>
+                                <option value="12">12번 홀</option>
+                                <option value="13">13번 홀</option>
+                                <option value="14">14번 홀</option>
+                                <option value="15">15번 홀</option>
+                                <option value="16">16번 홀</option>
+                                <option value="17">17번 홀</option>
+                                <option value="18">18번 홀</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 스코어 스크린 -->
+            <div class="screen" id="score-screen">
+                <div class="players-list" id="playersList">
+                    <!-- 플레이어 카드들이 여기에 동적으로 추가됨 -->
+                </div>
+
+            </div>
+
+            <!-- 미리보기 스크린 -->
+            <div class="screen" id="preview-screen">
+                <div class="preview-container">
+                    <canvas id="previewCanvas"></canvas>
+                    <div class="camera-placeholder" id="previewPlaceholder">
+                        <div class="icon">🖼️</div>
+                        <p>먼저 사진을 촬영해주세요</p>
+                    </div>
+                </div>
+
+                <div class="score-card">
+                    <h3 style="margin-bottom: 10px;">📍 오버레이 배치</h3>
+                    <div style="padding: 15px; background: #f0f0f0; border-radius: 10px; font-size: 0.9em; color: #666;">
+                        ✅ 왼쪽 상단: 골프장 이름<br>
+                        ✅ 오른쪽 상단: 클럽 이름<br>
+                        ✅ 오른쪽 하단: 스코어보드
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-success" id="downloadBtn">
+                        💾 저장
+                    </button>
+                    <button class="btn btn-primary" id="shareBtn">
+                        📤 공유
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-item active" data-screen="camera">
+                <span class="icon">📷</span>
+                <span class="label">카메라</span>
+            </button>
+            <button class="nav-item" data-screen="score">
+                <span class="icon">🏌️</span>
+                <span class="label">스코어</span>
+            </button>
+            <button class="nav-item" data-screen="preview">
+                <span class="icon">📱</span>
+                <span class="label">미리보기</span>
+            </button>
+            <button class="nav-item" id="quickShare">
+                <span class="icon">✨</span>
+                <span class="label">빠른공유</span>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- 로딩 -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <input type="file" id="uploadInput" accept="image/*">
+
+    <script>
+        // 전역 변수
+        let players = [];
+        let stream = null;
+        let capturedImage = null;
+        let overlayPosition = 'bottom-right';
+        let currentScreen = 'camera';
+
+        // 자동 저장/로드 기능
+        function saveData() {
+            const data = {
+                players: players,
+                clubName: document.getElementById('clubName').value,
+                courseName: document.getElementById('courseName').value,
+                holeNumber: document.getElementById('holeNumber').value,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('golfScoreData', JSON.stringify(data));
+            console.log('데이터 저장됨:', data);
+        }
+
+        function loadData() {
+            try {
+                const savedData = localStorage.getItem('golfScoreData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+
+                    // 고정 4명 플레이어 데이터 로드
+                    if (data.players && data.players.length === 4) {
+                        players = data.players;
+                    } else {
+                        // 기본 4명 플레이어 데이터
+                        players = [
+                            { name: '홍길동', score: -2, total: 34 },
+                            { name: '김철수', score: 0, total: 36 },
+                            { name: '이영희', score: 3, total: 39 },
+                            { name: '박민수', score: 5, total: 41 }
+                        ];
+                    }
+
+                    // 폼 데이터 로드
+                    if (data.clubName) document.getElementById('clubName').value = data.clubName;
+                    if (data.courseName) document.getElementById('courseName').value = data.courseName;
+                    if (data.holeNumber) document.getElementById('holeNumber').value = data.holeNumber;
+
+                    console.log('데이터 로드됨:', data);
+                } else {
+                    // 처음 사용 시 기본 4명 데이터
+                    players = [
+                        { name: '홍길동', score: -2, total: 34 },
+                        { name: '김철수', score: 0, total: 36 },
+                        { name: '이영희', score: 3, total: 39 },
+                        { name: '박민수', score: 5, total: 41 }
+                    ];
+                }
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                // 기본 4명 데이터로 초기화
+                players = [
+                    { name: '홍길동', score: -2, total: 34 },
+                    { name: '김철수', score: 0, total: 36 },
+                    { name: '이영희', score: 3, total: 39 },
+                    { name: '박민수', score: 5, total: 41 }
+                ];
+            }
+        }
+
+        // DOM 요소
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const previewCtx = previewCanvas.getContext('2d');
+
+        // 탭 전환
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const screen = tab.dataset.screen;
+                switchScreen(screen);
+
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+
+        // 하단 네비게이션
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const screen = item.dataset.screen;
+                if (screen) {
+                    switchScreen(screen);
+
+                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                    item.classList.add('active');
+
+                    document.querySelectorAll('.tab').forEach(t => {
+                        t.classList.remove('active');
+                        if (t.dataset.screen === screen) {
+                            t.classList.add('active');
+                        }
+                    });
+                }
+            });
+        });
+
+        // 화면 전환
+        function switchScreen(screen) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${screen}-screen`).classList.add('active');
+            currentScreen = screen;
+
+            if (screen === 'preview') {
+                updatePreview();
+            }
+        }
+
+        // 카메라 시작
+        document.getElementById('startCamera').addEventListener('click', async () => {
+            const btn = document.getElementById('startCamera');
+
+            if (stream) {
+                // 카메라 중지
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                video.style.display = 'none';
+                document.getElementById('placeholder').style.display = 'flex';
+                document.getElementById('capturePhoto').style.display = 'none';
+                btn.innerHTML = '📹 카메라 시작';
+            } else {
+                // 카메라 시작
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 }
+                        }
+                    });
+
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    document.getElementById('placeholder').style.display = 'none';
+                    document.getElementById('capturePhoto').style.display = 'block';
+                    btn.innerHTML = '🔴 카메라 중지';
+
+                    video.addEventListener('loadedmetadata', () => {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                    });
+                } catch (err) {
+                    alert('카메라를 시작할 수 없습니다.');
+                }
+            }
+        });
+
+        // 사진 촬영
+        document.getElementById('capturePhoto').addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+
+            capturedImage = new Image();
+            capturedImage.src = canvas.toDataURL('image/jpeg', 0.9);
+            capturedImage.onload = () => {
+                canvas.style.display = 'block';
+                video.style.display = 'none';
+                document.getElementById('capturePhoto').style.display = 'none';
+                document.getElementById('placeholder').style.display = 'none';
+                updatePreview();
+
+                // 카메라 중지
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                    document.getElementById('startCamera').innerHTML = '📹 카메라 시작';
+                }
+            };
+        });
+
+        // 사진 업로드
+        document.getElementById('uploadPhoto').addEventListener('click', () => {
+            document.getElementById('uploadInput').click();
+        });
+
+        document.getElementById('uploadInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    capturedImage = new Image();
+                    capturedImage.onload = () => {
+                        canvas.width = capturedImage.width;
+                        canvas.height = capturedImage.height;
+                        ctx.drawImage(capturedImage, 0, 0);
+                        canvas.style.display = 'block';
+                        document.getElementById('placeholder').style.display = 'none';
+                        document.getElementById('uploadedImage').src = e.target.result;
+                        updatePreview();
+                    };
+                    capturedImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+
+        // 플레이어 리스트 업데이트
+        function updatePlayersList() {
+            const container = document.getElementById('playersList');
+            container.innerHTML = '';
+
+            players.sort((a, b) => a.score - b.score);
+
+            players.forEach((player, index) => {
+                const scoreClass = player.score < 0 ? 'under' : player.score > 0 ? 'over' : 'even';
+                const scoreText = player.score > 0 ? `+${player.score}` : player.score === 0 ? 'E' : `${player.score}`;
+
+                const card = document.createElement('div');
+                card.className = 'player-card';
+                card.innerHTML = `
+                    <div class="player-rank ${index === 0 ? 'first' : ''}">${index + 1}</div>
+                    <div class="player-info">
+                        <div class="player-name" contenteditable="true" data-field="name" data-index="${index}">${player.name}</div>
+                        <div class="player-stats">
+                            <div class="stat">
+                                <div class="stat-label">스코어</div>
+                                <div class="stat-value ${scoreClass}" contenteditable="true" data-field="score" data-index="${index}">${scoreText}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">총타수</div>
+                                <div class="stat-value" contenteditable="true" data-field="total" data-index="${index}">${player.total}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+
+                // 이름과 스코어 편집 가능
+                const editableElements = card.querySelectorAll('[contenteditable="true"]');
+                editableElements.forEach(element => {
+                    element.addEventListener('blur', handlePlayerEdit);
+                    element.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            element.blur();
+                        }
+                    });
+                });
+            });
+        }
+
+        // 플레이어 정보 편집 처리 (이름과 스코어 수정 가능)
+        function handlePlayerEdit(event) {
+            const element = event.target;
+            const field = element.dataset.field;
+            const index = parseInt(element.dataset.index);
+            let value = element.textContent.trim();
+
+            if (field === 'name') {
+                // 이름 수정
+                if (value && value.length <= 10) {
+                    players[index].name = value;
+                    // UI 업데이트 및 저장
+                    updatePlayersList();
+                    updatePreview();
+                    saveData();
+                } else {
+                    // 잘못된 값이면 원래 값으로 복원
+                    updatePlayersList();
+                }
+            } else if (field === 'score') {
+                // 스코어 파싱 (+3, -2, E 등)
+                let scoreValue;
+                if (value.toLowerCase() === 'e') {
+                    scoreValue = 0;
+                } else {
+                    scoreValue = parseInt(value.replace(/[^-\d]/g, ''));
+                }
+
+                if (!isNaN(scoreValue) && scoreValue >= -10 && scoreValue <= 15) {
+                    players[index].score = scoreValue;
+
+                    // 총타수 자동 계산 (파 4 기준으로 72파 가정)
+                    const currentHole = parseInt(document.getElementById('holeNumber').value);
+                    const basePar = 72; // 18홀 기준 파
+                    const estimatedTotal = basePar + scoreValue;
+                    players[index].total = Math.max(18, estimatedTotal); // 최소 18타
+
+                    // UI 업데이트 및 저장
+                    updatePlayersList();
+                    updatePreview();
+                    saveData();
+                } else {
+                    // 잘못된 값이면 원래 값으로 복원
+                    updatePlayersList();
+                }
+            } else if (field === 'total') {
+                // 총타수 수정
+                const totalValue = parseInt(value);
+                if (!isNaN(totalValue) && totalValue >= 18 && totalValue <= 150) {
+                    players[index].total = totalValue;
+
+                    // UI 업데이트 및 저장
+                    updatePlayersList();
+                    updatePreview();
+                    saveData();
+                } else {
+                    // 잘못된 값이면 원래 값으로 복원
+                    updatePlayersList();
+                }
+            }
+        }
+
+
+        // 오버레이는 이제 고정 위치로 자동 배치됩니다
+
+        // 미리보기 업데이트
+        function updatePreview() {
+            if (!capturedImage) {
+                document.getElementById('previewPlaceholder').style.display = 'flex';
+                previewCanvas.style.display = 'none';
+                return;
+            }
+
+            document.getElementById('previewPlaceholder').style.display = 'none';
+            previewCanvas.style.display = 'block';
+
+            previewCanvas.width = capturedImage.width;
+            previewCanvas.height = capturedImage.height;
+
+            previewCtx.drawImage(capturedImage, 0, 0);
+            drawOverlay(previewCtx, previewCanvas.width, previewCanvas.height);
+        }
+
+        // 오버레이 그리기 (PGA 방송 스타일)
+        function drawOverlay(ctx, canvasWidth, canvasHeight) {
+            const scale = Math.min(canvasWidth, canvasHeight) / 1000;
+            const padding = 20 * scale;
+
+            // 현재 시간
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+
+            // 1. 상단 중앙 - 홀 번호와 시간 (PGA 스타일)
+            const holeNumber = document.getElementById('holeNumber').value;
+            const topBarWidth = 300 * scale;
+            const topBarHeight = 70 * scale;
+            const topBarX = (canvasWidth - topBarWidth) / 2;
+            const topBarY = padding;
+
+            // 상단 바 배경 (고급스러운 그라데이션)
+            const topGradient = ctx.createLinearGradient(topBarX, topBarY, topBarX, topBarY + topBarHeight);
+            topGradient.addColorStop(0, 'rgba(15, 76, 129, 0.95)');
+            topGradient.addColorStop(0.5, 'rgba(9, 132, 227, 0.9)');
+            topGradient.addColorStop(1, 'rgba(30, 144, 255, 0.95)');
+            ctx.fillStyle = topGradient;
+            roundRect(ctx, topBarX, topBarY, topBarWidth, topBarHeight, 8 * scale);
+            ctx.fill();
+
+            // 상단 바 테두리
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2 * scale;
+            roundRect(ctx, topBarX, topBarY, topBarWidth, topBarHeight, 8 * scale);
+            ctx.stroke();
+
+            // PAR 4 표시
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${16 * scale}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('PAR 4', topBarX + topBarWidth/2, topBarY + 22 * scale);
+
+            // 홀 번호 (크게)
+            ctx.font = `bold ${32 * scale}px Arial`;
+            ctx.fillText(holeNumber, topBarX + 60 * scale, topBarY + 50 * scale);
+
+            // 시간
+            ctx.font = `${14 * scale}px Arial`;
+            ctx.fillText(timeString, topBarX + topBarWidth - 60 * scale, topBarY + 25 * scale);
+
+            // "9월 14일 일요일" 날짜
+            const dateString = now.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' });
+            ctx.font = `${12 * scale}px Arial`;
+            ctx.fillText(dateString, topBarX + topBarWidth - 60 * scale, topBarY + 45 * scale);
+
+            // 2. 왼쪽 상단 - 골프장 이름 (상단 바와 같은 높이)
+            const courseName = document.getElementById('courseName').value;
+            if (courseName) {
+                const courseWidth = 250 * scale;
+                const courseHeight = 50 * scale;
+                const courseX = padding;
+                const courseY = padding;
+
+                // 배경 (상단 바와 비슷한 스타일)
+                const courseGradient = ctx.createLinearGradient(courseX, courseY, courseX, courseY + courseHeight);
+                courseGradient.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
+                courseGradient.addColorStop(1, 'rgba(0, 0, 0, 0.75)');
+                ctx.fillStyle = courseGradient;
+                roundRect(ctx, courseX, courseY, courseWidth, courseHeight, 8 * scale);
+                ctx.fill();
+
+                // 테두리
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 2 * scale;
+                roundRect(ctx, courseX, courseY, courseWidth, courseHeight, 8 * scale);
+                ctx.stroke();
+
+                // 텍스트
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${18 * scale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(courseName, courseX + courseWidth/2, courseY + 32 * scale);
+            }
+
+            // 3. 오른쪽 상단 - 클럽 이름 (상단 바와 같은 높이)
+            const clubName = document.getElementById('clubName').value;
+            if (clubName) {
+                const clubWidth = 180 * scale;
+                const clubHeight = 50 * scale;
+                const clubX = canvasWidth - clubWidth - padding;
+                const clubY = padding;
+
+                // 클럽 배경 (녹색 그라데이션)
+                const clubGradient = ctx.createLinearGradient(clubX, clubY, clubX, clubY + clubHeight);
+                clubGradient.addColorStop(0, '#4CAF50');
+                clubGradient.addColorStop(0.5, '#388E3C');
+                clubGradient.addColorStop(1, '#2E7D32');
+                ctx.fillStyle = clubGradient;
+                roundRect(ctx, clubX, clubY, clubWidth, clubHeight, 8 * scale);
+                ctx.fill();
+
+                // 테두리
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 2 * scale;
+                roundRect(ctx, clubX, clubY, clubWidth, clubHeight, 8 * scale);
+                ctx.stroke();
+
+                // 클럽 텍스트
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${20 * scale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(clubName, clubX + clubWidth/2, clubY + 32 * scale);
+            }
+
+            // 4. 오른쪽 하단 - PGA 스타일 스코어보드
+            const scoreWidth = 380 * scale;
+            const headerHeight = 45 * scale;
+            const rowHeight = 45 * scale;
+            const scoreHeight = headerHeight + (players.length * rowHeight) + 10 * scale;
+            const scoreX = canvasWidth - scoreWidth - padding;
+            const scoreY = canvasHeight - scoreHeight - padding;
+
+            // 메인 스코어보드 배경
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+            roundRect(ctx, scoreX, scoreY, scoreWidth, scoreHeight, 12 * scale);
+            ctx.fill();
+
+            // 헤더 배경 (PGA 스타일 블루 그라데이션)
+            const headerGradient = ctx.createLinearGradient(scoreX, scoreY, scoreX, scoreY + headerHeight);
+            headerGradient.addColorStop(0, '#1565C0');
+            headerGradient.addColorStop(0.5, '#1976D2');
+            headerGradient.addColorStop(1, '#1E88E5');
+            ctx.fillStyle = headerGradient;
+            roundRect(ctx, scoreX, scoreY, scoreWidth, headerHeight, [12 * scale, 12 * scale, 0, 0]);
+            ctx.fill();
+
+            // 헤더 구분선
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1 * scale;
+            ctx.beginPath();
+            ctx.moveTo(scoreX + 50 * scale, scoreY + 10 * scale);
+            ctx.lineTo(scoreX + 50 * scale, scoreY + headerHeight - 10 * scale);
+            ctx.moveTo(scoreX + 200 * scale, scoreY + 10 * scale);
+            ctx.lineTo(scoreX + 200 * scale, scoreY + headerHeight - 10 * scale);
+            ctx.moveTo(scoreX + 280 * scale, scoreY + 10 * scale);
+            ctx.lineTo(scoreX + 280 * scale, scoreY + headerHeight - 10 * scale);
+            ctx.stroke();
+
+            // 헤더 텍스트
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${14 * scale}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('#', scoreX + 25 * scale, scoreY + 28 * scale);
+            ctx.fillText('PLAYER', scoreX + 125 * scale, scoreY + 28 * scale);
+            ctx.fillText('SPT', scoreX + 240 * scale, scoreY + 28 * scale);
+            ctx.fillText('TOTAL', scoreX + 330 * scale, scoreY + 28 * scale);
+
+            // 플레이어 행들
+            players.forEach((player, index) => {
+                const playerY = scoreY + headerHeight + (index * rowHeight);
+                const isLeader = index === 0;
+
+                // 행 배경 (리더는 하이라이트)
+                if (isLeader) {
+                    const leaderGradient = ctx.createLinearGradient(scoreX, playerY, scoreX, playerY + rowHeight);
+                    leaderGradient.addColorStop(0, 'rgba(255, 193, 7, 0.2)');
+                    leaderGradient.addColorStop(1, 'rgba(255, 235, 59, 0.1)');
+                    ctx.fillStyle = leaderGradient;
+                } else {
+                    ctx.fillStyle = index % 2 === 1 ? 'rgba(255, 255, 255, 0.05)' : 'transparent';
+                }
+                ctx.fillRect(scoreX, playerY, scoreWidth, rowHeight);
+
+                // 행 구분선
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.lineWidth = 1 * scale;
+                ctx.beginPath();
+                ctx.moveTo(scoreX + 50 * scale, playerY);
+                ctx.lineTo(scoreX + 50 * scale, playerY + rowHeight);
+                ctx.moveTo(scoreX + 200 * scale, playerY);
+                ctx.lineTo(scoreX + 200 * scale, playerY + rowHeight);
+                ctx.moveTo(scoreX + 280 * scale, playerY);
+                ctx.lineTo(scoreX + 280 * scale, playerY + rowHeight);
+                ctx.stroke();
+
+                // 순위 (동그라미 배지)
+                const rankCircleSize = 24 * scale;
+                ctx.fillStyle = isLeader ? '#FFD700' : '#64B5F6';
+                ctx.beginPath();
+                ctx.arc(scoreX + 25 * scale, playerY + rowHeight/2, rankCircleSize/2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 순위 숫자
+                ctx.fillStyle = isLeader ? '#000' : 'white';
+                ctx.font = `bold ${16 * scale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(`${index + 1}`, scoreX + 25 * scale, playerY + rowHeight/2 + 5 * scale);
+
+                // 플레이어 이름
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${18 * scale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(player.name, scoreX + 125 * scale, playerY + rowHeight/2 + 6 * scale);
+
+                // 스코어 (SPT)
+                const scoreText = player.score > 0 ? `+${player.score}` : player.score === 0 ? 'E' : `${player.score}`;
+                ctx.fillStyle = player.score < 0 ? '#4CAF50' : player.score > 0 ? '#F44336' : '#FFF';
+                ctx.font = `bold ${20 * scale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(scoreText, scoreX + 240 * scale, playerY + rowHeight/2 + 6 * scale);
+
+                // 총타수 (OS)
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${20 * scale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(player.total, scoreX + 330 * scale, playerY + rowHeight/2 + 6 * scale);
+            });
+
+            // 스코어보드 하단 브랜딩
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.font = `${12 * scale}px Arial`;
+            ctx.textAlign = 'right';
+            ctx.fillText('LIVE', scoreX + scoreWidth - 10 * scale, scoreY + scoreHeight - 8 * scale);
+        }
+
+        // RoundRect 헬퍼 함수
+        function roundRect(ctx, x, y, width, height, radius) {
+            if (typeof radius === 'number') {
+                radius = [radius, radius, radius, radius];
+            } else if (Array.isArray(radius) && radius.length === 2) {
+                radius = [radius[0], radius[0], radius[1], radius[1]];
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(x + radius[0], y);
+            ctx.lineTo(x + width - radius[1], y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius[1]);
+            ctx.lineTo(x + width, y + height - radius[2]);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius[2], y + height);
+            ctx.lineTo(x + radius[3], y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius[3]);
+            ctx.lineTo(x, y + radius[0]);
+            ctx.quadraticCurveTo(x, y, x + radius[0], y);
+            ctx.closePath();
+        }
+
+        // 다운로드 (개선된 버전)
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if (!capturedImage) {
+                alert('먼저 사진을 촬영해주세요!');
+                return;
+            }
+
+            try {
+                // 미리보기 업데이트 후 다운로드
+                updatePreview();
+
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[-:]/g, '').replace('T', '_');
+                const filename = `golf_score_${timestamp}.jpg`;
+
+                previewCanvas.toBlob((blob) => {
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+
+                        alert(`이미지가 저장되었습니다: ${filename}`);
+                    } else {
+                        // 백업 방법
+                        const link = document.createElement('a');
+                        link.download = filename;
+                        link.href = previewCanvas.toDataURL('image/jpeg', 0.95);
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        alert(`이미지가 저장되었습니다: ${filename}`);
+                    }
+                }, 'image/jpeg', 0.95);
+            } catch (error) {
+                console.error('저장 오류:', error);
+                alert('저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+            }
+        });
+
+        // 공유
+        document.getElementById('shareBtn').addEventListener('click', async () => {
+            if (!capturedImage) {
+                alert('먼저 사진을 촬영해주세요!');
+                return;
+            }
+
+            try {
+                previewCanvas.toBlob(async (blob) => {
+                    if (navigator.share && navigator.canShare) {
+                        const file = new File([blob], 'golf_score.jpg', { type: 'image/jpeg' });
+                        const shareData = {
+                            files: [file],
+                            title: '골프 스코어',
+                            text: '골프 라운딩 실시간 스코어'
+                        };
+
+                        if (navigator.canShare(shareData)) {
+                            await navigator.share(shareData);
+                        } else {
+                            copyToClipboard(blob);
+                        }
+                    } else {
+                        copyToClipboard(blob);
+                    }
+                }, 'image/jpeg', 0.9);
+            } catch (err) {
+                alert('공유 실패: ' + err.message);
+            }
+        });
+
+        // 클립보드 복사
+        async function copyToClipboard(blob) {
+            try {
+                const item = new ClipboardItem({ 'image/png': blob });
+                await navigator.clipboard.write([item]);
+                alert('이미지가 복사되었습니다!\n카톡에서 붙여넣기하세요.');
+            } catch (err) {
+                alert('복사 실패: ' + err.message);
+            }
+        }
+
+        // 빠른 공유
+        document.getElementById('quickShare').addEventListener('click', () => {
+            if (!capturedImage) {
+                alert('먼저 사진을 촬영해주세요!');
+                switchScreen('camera');
+                return;
+            }
+
+            document.getElementById('loading').classList.add('active');
+
+            setTimeout(() => {
+                updatePreview();
+                document.getElementById('shareBtn').click();
+                document.getElementById('loading').classList.remove('active');
+            }, 500);
+        });
+
+        // 초기화 - 데이터 로드 후 UI 업데이트
+        loadData();
+        updatePlayersList();
+
+        // 코스 정보 변경 시 미리보기 업데이트 및 자동 저장
+        document.getElementById('clubName').addEventListener('input', () => {
+            updatePreview();
+            saveData();
+        });
+        document.getElementById('courseName').addEventListener('input', () => {
+            updatePreview();
+            saveData();
+        });
+        document.getElementById('holeNumber').addEventListener('change', () => {
+            updatePreview();
+            saveData();
+        });
+
+        // PWA 설치 프롬프트
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+    </script>
+</body>
+</html>
