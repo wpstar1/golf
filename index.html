@@ -891,7 +891,7 @@
                             </div>
                             <div class="stat">
                                 <div class="stat-label">총타수</div>
-                                <div class="stat-value" contenteditable="true" data-field="total" data-index="${index}">${player.total}</div>
+                                <div class="stat-value" data-field="total" data-index="${index}">${player.total}</div>
                             </div>
                         </div>
                     </div>
@@ -910,6 +910,19 @@
                     });
                 });
             });
+        }
+
+        // 총타수 자동 계산
+        function calculateTotal(score, currentHole) {
+            const par = 72; // 18홀 표준 파
+            // 현재 홀까지의 타수 = (현재 홀 × 4) + 스코어
+            // 남은 홀은 파 4로 계산
+            const playedHoles = currentHole;
+            const remainingHoles = 18 - currentHole;
+            const currentTotal = (playedHoles * 4) + score; // 현재까지 친 타수
+            const projectedTotal = currentTotal + (remainingHoles * 4); // 남은 홀을 파로 예상
+
+            return Math.max(18, projectedTotal);
         }
 
         // 플레이어 정보 편집 처리
@@ -940,10 +953,10 @@
 
                 if (!isNaN(scoreValue) && scoreValue >= -10 && scoreValue <= 15) {
                     players[index].score = scoreValue;
+
+                    // 현재 홀을 기준으로 총타수 자동 계산
                     const currentHole = parseInt(document.getElementById('holeNumber').value);
-                    const basePar = 72;
-                    const estimatedTotal = basePar + scoreValue;
-                    players[index].total = Math.max(18, estimatedTotal);
+                    players[index].total = calculateTotal(scoreValue, currentHole);
 
                     updatePlayersList();
                     updatePreview();
@@ -952,16 +965,8 @@
                     updatePlayersList();
                 }
             } else if (field === 'total') {
-                // 총타수 수정
-                const totalValue = parseInt(value);
-                if (!isNaN(totalValue) && totalValue >= 18 && totalValue <= 150) {
-                    players[index].total = totalValue;
-                    updatePlayersList();
-                    updatePreview();
-                    saveData();
-                } else {
-                    updatePlayersList();
-                }
+                // 총타수는 편집 불가 (자동 계산되므로)
+                updatePlayersList();
             }
         }
 
@@ -1339,6 +1344,12 @@
             saveData();
         });
         document.getElementById('holeNumber').addEventListener('change', () => {
+            // 홀 번호 변경 시 총타수 재계산
+            const currentHole = parseInt(document.getElementById('holeNumber').value);
+            players.forEach(player => {
+                player.total = calculateTotal(player.score, currentHole);
+            });
+            updatePlayersList();
             updatePreview();
             saveData();
         });
