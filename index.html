@@ -571,14 +571,11 @@
                     </div>
 
                     <div class="btn-group">
-                        <button class="btn btn-primary" id="startCamera">
-                            📹 카메라 시작
+                        <button class="btn btn-primary" id="takePhoto">
+                            📸 사진 찍기
                         </button>
                         <button class="btn btn-warning" id="uploadPhoto">
                             📁 사진 선택
-                        </button>
-                        <button class="btn btn-success btn-full" id="capturePhoto" style="display: none;">
-                            📸 사진 찍기
                         </button>
                     </div>
                 </div>
@@ -684,6 +681,7 @@
     </div>
 
     <input type="file" id="uploadInput" accept="image/*">
+    <input type="file" id="cameraInput" accept="image/*" capture="environment">
 
     <script>
         // 뷰포트 높이 설정 (iOS 대응)
@@ -818,72 +816,33 @@
             }
         }
 
-        // 카메라 시작
-        document.getElementById('startCamera').addEventListener('click', async () => {
-            const btn = document.getElementById('startCamera');
+        // 사진 찍기 (카메라 직접 촬영)
+        document.getElementById('takePhoto').addEventListener('click', () => {
+            document.getElementById('cameraInput').click();
+        });
 
-            if (stream) {
-                // 카메라 중지
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-                video.style.display = 'none';
-                document.getElementById('placeholder').style.display = 'flex';
-                document.getElementById('capturePhoto').style.display = 'none';
-                btn.innerHTML = '📹 카메라 시작';
-            } else {
-                // 카메라 시작
-                try {
-                    const constraints = {
-                        video: {
-                            facingMode: { ideal: 'environment' },
-                            width: { ideal: 1920 },
-                            height: { ideal: 1080 }
-                        }
+        // 카메라로 찍은 사진 처리
+        document.getElementById('cameraInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    capturedImage = new Image();
+                    capturedImage.onload = () => {
+                        canvas.width = capturedImage.width;
+                        canvas.height = capturedImage.height;
+                        ctx.drawImage(capturedImage, 0, 0);
+                        canvas.style.display = 'block';
+                        document.getElementById('placeholder').style.display = 'none';
+                        updatePreview();
                     };
-
-                    stream = await navigator.mediaDevices.getUserMedia(constraints);
-                    video.srcObject = stream;
-                    video.style.display = 'block';
-                    document.getElementById('placeholder').style.display = 'none';
-                    document.getElementById('capturePhoto').style.display = 'block';
-                    btn.innerHTML = '🔴 카메라 중지';
-
-                    video.addEventListener('loadedmetadata', () => {
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                    });
-                } catch (err) {
-                    console.error('카메라 오류:', err);
-                    alert('카메라를 시작할 수 없습니다.\n카메라 권한을 확인해주세요.');
-                }
+                    capturedImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
             }
         });
 
-        // 사진 촬영
-        document.getElementById('capturePhoto').addEventListener('click', () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
-
-            capturedImage = new Image();
-            capturedImage.src = canvas.toDataURL('image/jpeg', 0.9);
-            capturedImage.onload = () => {
-                canvas.style.display = 'block';
-                video.style.display = 'none';
-                document.getElementById('capturePhoto').style.display = 'none';
-                document.getElementById('placeholder').style.display = 'none';
-                updatePreview();
-
-                // 카메라 중지
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                    stream = null;
-                    document.getElementById('startCamera').innerHTML = '📹 카메라 시작';
-                }
-            };
-        });
-
-        // 사진 업로드
+        // 사진 업로드 (갤러리에서 선택)
         document.getElementById('uploadPhoto').addEventListener('click', () => {
             document.getElementById('uploadInput').click();
         });
@@ -900,7 +859,6 @@
                         ctx.drawImage(capturedImage, 0, 0);
                         canvas.style.display = 'block';
                         document.getElementById('placeholder').style.display = 'none';
-                        document.getElementById('uploadedImage').src = e.target.result;
                         updatePreview();
                     };
                     capturedImage.src = e.target.result;
