@@ -2,10 +2,12 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2ecc71">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
     <title>⛳ 골프 스코어 라이브</title>
     <link rel="manifest" href="manifest.json">
     <style>
@@ -17,31 +19,46 @@
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            touch-action: manipulation;
         }
 
         .app {
-            width: 100%;
-            min-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
             background: white;
             display: flex;
             flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow: hidden;
         }
 
         .header {
             background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
             color: white;
-            padding: 20px 15px 15px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            padding: env(safe-area-inset-top, 20px) 12px 12px;
+            padding-top: calc(env(safe-area-inset-top, 20px) + 12px);
+            flex-shrink: 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
@@ -49,34 +66,36 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .header h1 {
-            font-size: 1.5em;
+            font-size: 1.3rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            font-weight: 700;
         }
 
         .menu-btn {
             background: rgba(255,255,255,0.2);
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5em;
+            font-size: 1.3rem;
+            cursor: pointer;
         }
 
         .tab-bar {
             display: flex;
             background: rgba(0,0,0,0.1);
-            border-radius: 25px;
-            padding: 4px;
-            margin-top: 10px;
+            border-radius: 20px;
+            padding: 3px;
+            margin-top: 8px;
         }
 
         .tab {
@@ -84,11 +103,13 @@
             background: transparent;
             border: none;
             color: rgba(255,255,255,0.7);
-            padding: 10px;
-            border-radius: 20px;
-            font-size: 0.9em;
+            padding: 8px 4px;
+            border-radius: 17px;
+            font-size: 0.85rem;
             font-weight: 600;
             transition: all 0.3s;
+            white-space: nowrap;
+            cursor: pointer;
         }
 
         .tab.active {
@@ -99,13 +120,18 @@
         .content {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
+            position: relative;
+            padding-bottom: env(safe-area-inset-bottom, 0);
         }
 
         .screen {
             display: none;
-            padding: 15px;
+            padding: 12px;
             animation: slideIn 0.3s ease;
+            min-height: 100%;
+            padding-bottom: calc(60px + env(safe-area-inset-bottom, 0));
         }
 
         .screen.active {
@@ -115,7 +141,7 @@
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateX(20px);
+                transform: translateX(10px);
             }
             to {
                 opacity: 1;
@@ -125,9 +151,9 @@
 
         .camera-section {
             background: #f8f9fa;
-            border-radius: 20px;
-            padding: 15px;
-            margin-bottom: 15px;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 12px;
         }
 
         .camera-container {
@@ -135,9 +161,9 @@
             width: 100%;
             aspect-ratio: 4/3;
             background: black;
-            border-radius: 15px;
+            border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         #video, #canvas, #uploadedImage {
@@ -156,30 +182,36 @@
         }
 
         .camera-placeholder .icon {
-            font-size: 3em;
-            margin-bottom: 10px;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .camera-placeholder p {
+            font-size: 0.9rem;
         }
 
         .btn-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
         }
 
         .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 15px;
-            border-radius: 15px;
-            font-size: 1em;
+            padding: 12px 8px;
+            border-radius: 12px;
+            font-size: 0.9rem;
             font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
+            min-height: 44px;
         }
 
         .btn:active {
@@ -208,38 +240,40 @@
 
         .score-card {
             background: white;
-            border-radius: 20px;
-            padding: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 12px;
         }
 
         .course-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
         }
 
         .input-group label {
-            font-size: 0.85em;
+            font-size: 0.8rem;
             color: #666;
             font-weight: 600;
         }
 
         .input-group input, .input-group select {
-            padding: 12px;
+            padding: 10px;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1em;
+            border-radius: 8px;
+            font-size: 0.95rem;
             background: white;
             transition: all 0.3s;
+            min-height: 44px;
+            width: 100%;
         }
 
         .input-group input:focus, .input-group select:focus {
@@ -249,19 +283,20 @@
         }
 
         .players-list {
-            margin-top: 15px;
+            margin-top: 12px;
         }
 
         .player-card {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 10px;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             position: relative;
             transition: all 0.3s;
+            min-height: 60px;
         }
 
         .player-card:active {
@@ -269,8 +304,8 @@
         }
 
         .player-rank {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
             color: white;
             border-radius: 50%;
@@ -278,8 +313,9 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.2em;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            font-size: 1.1rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            flex-shrink: 0;
         }
 
         .player-rank.first {
@@ -288,18 +324,22 @@
 
         .player-info {
             flex: 1;
+            min-width: 0;
         }
 
         .player-name {
             font-weight: 700;
-            font-size: 1.1em;
+            font-size: 1rem;
             color: #2c3e50;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
+            word-break: keep-all;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .player-stats {
             display: flex;
-            gap: 15px;
+            gap: 12px;
         }
 
         .stat {
@@ -309,13 +349,13 @@
         }
 
         .stat-label {
-            font-size: 0.75em;
+            font-size: 0.7rem;
             color: #999;
             text-transform: uppercase;
         }
 
         .stat-value {
-            font-size: 1.3em;
+            font-size: 1.2rem;
             font-weight: bold;
             color: #2c3e50;
         }
@@ -332,43 +372,13 @@
             color: #3498db;
         }
 
-        .delete-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(231, 76, 60, 0.1);
-            color: #e74c3c;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-        }
-
-        .add-player-card {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            margin-top: 15px;
-            transition: all 0.3s;
-        }
-
-        .add-player-card:active {
-            transform: scale(0.95);
-        }
-
         .preview-container {
             position: relative;
             width: 100%;
             background: #f8f9fa;
-            border-radius: 15px;
+            border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         #previewCanvas {
@@ -376,118 +386,45 @@
             display: block;
         }
 
-        .overlay-position-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin: 15px 0;
-        }
-
-        .position-btn {
-            padding: 15px 10px;
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1.5em;
-            transition: all 0.3s;
-        }
-
-        .position-btn.active {
-            background: #2ecc71;
-            border-color: #2ecc71;
-            color: white;
-        }
-
-        .floating-menu {
+        .bottom-nav {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .fab {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5em;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            border: none;
-            transition: all 0.3s;
-        }
-
-        .fab:active {
-            transform: scale(0.9);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            animation: fadeIn 0.3s;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: flex-end;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
             background: white;
-            width: 100%;
-            border-radius: 20px 20px 0 0;
-            padding: 20px;
-            animation: slideUp 0.3s;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .close-modal {
-            background: #f0f0f0;
-            border: none;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            font-size: 1.5em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .input-grid {
+            border-top: 1px solid #e0e0e0;
             display: grid;
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            padding: 8px 0 env(safe-area-inset-bottom, 8px);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding: 5px;
+            border: none;
+            background: none;
+            color: #999;
+            transition: all 0.3s;
+            cursor: pointer;
+            min-height: 44px;
+        }
+
+        .nav-item.active {
+            color: #2ecc71;
+        }
+
+        .nav-item .icon {
+            font-size: 1.3rem;
+        }
+
+        .nav-item .label {
+            font-size: 0.7rem;
+            font-weight: 600;
         }
 
         .loading {
@@ -524,39 +461,84 @@
             display: none;
         }
 
-        .bottom-nav {
-            position: sticky;
-            bottom: 0;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            padding: 10px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        /* iOS 안전 영역 대응 */
+        @supports (padding: max(0px)) {
+            .header {
+                padding-top: max(20px, env(safe-area-inset-top));
+            }
+
+            .bottom-nav {
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
+            }
         }
 
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            padding: 5px;
-            border: none;
-            background: none;
-            color: #999;
-            transition: all 0.3s;
+        /* 작은 화면 최적화 */
+        @media screen and (max-height: 667px) {
+            .header h1 {
+                font-size: 1.2rem;
+            }
+
+            .tab {
+                font-size: 0.8rem;
+                padding: 6px 4px;
+            }
+
+            .btn {
+                padding: 10px 6px;
+                font-size: 0.85rem;
+            }
+
+            .player-card {
+                padding: 10px;
+                min-height: 55px;
+            }
         }
 
-        .nav-item.active {
-            color: #2ecc71;
+        /* 매우 작은 화면 (SE 등) */
+        @media screen and (max-width: 320px) {
+            .header h1 {
+                font-size: 1.1rem;
+            }
+
+            .course-info {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                font-size: 0.85rem;
+            }
         }
 
-        .nav-item .icon {
-            font-size: 1.5em;
+        /* 가로 모드 차단 스타일 */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            .app::before {
+                content: "📱 세로 모드로 사용해주세요";
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+                font-weight: 600;
+                z-index: 9999;
+            }
         }
 
-        .nav-item .label {
-            font-size: 0.75em;
+        /* 터치 반응 개선 */
+        @media (hover: none) and (pointer: coarse) {
+            .btn:active,
+            .nav-item:active {
+                opacity: 0.8;
+            }
         }
     </style>
 </head>
@@ -579,7 +561,7 @@
             <div class="screen active" id="camera-screen">
                 <div class="camera-section">
                     <div class="camera-container">
-                        <video id="video" style="display: none;"></video>
+                        <video id="video" style="display: none;" playsinline></video>
                         <canvas id="canvas" style="display: none;"></canvas>
                         <img id="uploadedImage" style="display: none;">
                         <div class="camera-placeholder" id="placeholder">
@@ -602,8 +584,8 @@
                 </div>
 
                 <div class="score-card">
-                    <h3 style="margin-bottom: 15px;">🏌️ 클럽 & 코스 정보</h3>
-                    <div class="input-group" style="margin-bottom: 15px;">
+                    <h3 style="margin-bottom: 12px; font-size: 1rem;">🏌️ 클럽 & 코스 정보</h3>
+                    <div class="input-group" style="margin-bottom: 12px;">
                         <label>클럽 이름</label>
                         <input type="text" id="clubName" value="꿀잼" placeholder="예: 꿀잼, 버디">
                     </div>
@@ -644,7 +626,6 @@
                 <div class="players-list" id="playersList">
                     <!-- 플레이어 카드들이 여기에 동적으로 추가됨 -->
                 </div>
-
             </div>
 
             <!-- 미리보기 스크린 -->
@@ -658,8 +639,8 @@
                 </div>
 
                 <div class="score-card">
-                    <h3 style="margin-bottom: 10px;">📍 오버레이 배치</h3>
-                    <div style="padding: 15px; background: #f0f0f0; border-radius: 10px; font-size: 0.9em; color: #666;">
+                    <h3 style="margin-bottom: 8px; font-size: 1rem;">📍 오버레이 배치</h3>
+                    <div style="padding: 12px; background: #f0f0f0; border-radius: 8px; font-size: 0.85rem; color: #666; line-height: 1.4;">
                         ✅ 왼쪽 상단: 골프장 이름<br>
                         ✅ 오른쪽 상단: 클럽 이름<br>
                         ✅ 오른쪽 하단: 스코어보드
@@ -697,15 +678,31 @@
         </div>
     </div>
 
-
     <!-- 로딩 -->
     <div class="loading" id="loading">
         <div class="spinner"></div>
     </div>
 
-    <input type="file" id="uploadInput" accept="image/*">
+    <input type="file" id="uploadInput" accept="image/*" capture="environment">
 
     <script>
+        // 뷰포트 높이 설정 (iOS 대응)
+        function setViewportHeight() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+
+        setViewportHeight();
+        window.addEventListener('resize', setViewportHeight);
+        window.addEventListener('orientationchange', setViewportHeight);
+
+        // iOS 바운스 스크롤 방지
+        document.addEventListener('touchmove', function(e) {
+            if (!e.target.closest('.content')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
         // 전역 변수
         let players = [];
         let stream = null;
@@ -836,14 +833,15 @@
             } else {
                 // 카메라 시작
                 try {
-                    stream = await navigator.mediaDevices.getUserMedia({
+                    const constraints = {
                         video: {
-                            facingMode: 'environment',
+                            facingMode: { ideal: 'environment' },
                             width: { ideal: 1920 },
                             height: { ideal: 1080 }
                         }
-                    });
+                    };
 
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
                     video.srcObject = stream;
                     video.style.display = 'block';
                     document.getElementById('placeholder').style.display = 'none';
@@ -855,7 +853,8 @@
                         canvas.height = video.videoHeight;
                     });
                 } catch (err) {
-                    alert('카메라를 시작할 수 없습니다.');
+                    console.error('카메라 오류:', err);
+                    alert('카메라를 시작할 수 없습니다.\n카메라 권한을 확인해주세요.');
                 }
             }
         });
@@ -910,7 +909,6 @@
             }
         });
 
-
         // 플레이어 리스트 업데이트
         function updatePlayersList() {
             const container = document.getElementById('playersList');
@@ -956,7 +954,7 @@
             });
         }
 
-        // 플레이어 정보 편집 처리 (이름과 스코어 수정 가능)
+        // 플레이어 정보 편집 처리
         function handlePlayerEdit(event) {
             const element = event.target;
             const field = element.dataset.field;
@@ -967,16 +965,14 @@
                 // 이름 수정
                 if (value && value.length <= 10) {
                     players[index].name = value;
-                    // UI 업데이트 및 저장
                     updatePlayersList();
                     updatePreview();
                     saveData();
                 } else {
-                    // 잘못된 값이면 원래 값으로 복원
                     updatePlayersList();
                 }
             } else if (field === 'score') {
-                // 스코어 파싱 (+3, -2, E 등)
+                // 스코어 파싱
                 let scoreValue;
                 if (value.toLowerCase() === 'e') {
                     scoreValue = 0;
@@ -986,19 +982,15 @@
 
                 if (!isNaN(scoreValue) && scoreValue >= -10 && scoreValue <= 15) {
                     players[index].score = scoreValue;
-
-                    // 총타수 자동 계산 (파 4 기준으로 72파 가정)
                     const currentHole = parseInt(document.getElementById('holeNumber').value);
-                    const basePar = 72; // 18홀 기준 파
+                    const basePar = 72;
                     const estimatedTotal = basePar + scoreValue;
-                    players[index].total = Math.max(18, estimatedTotal); // 최소 18타
+                    players[index].total = Math.max(18, estimatedTotal);
 
-                    // UI 업데이트 및 저장
                     updatePlayersList();
                     updatePreview();
                     saveData();
                 } else {
-                    // 잘못된 값이면 원래 값으로 복원
                     updatePlayersList();
                 }
             } else if (field === 'total') {
@@ -1006,20 +998,14 @@
                 const totalValue = parseInt(value);
                 if (!isNaN(totalValue) && totalValue >= 18 && totalValue <= 150) {
                     players[index].total = totalValue;
-
-                    // UI 업데이트 및 저장
                     updatePlayersList();
                     updatePreview();
                     saveData();
                 } else {
-                    // 잘못된 값이면 원래 값으로 복원
                     updatePlayersList();
                 }
             }
         }
-
-
-        // 오버레이는 이제 고정 위치로 자동 배치됩니다
 
         // 미리보기 업데이트
         function updatePreview() {
@@ -1039,164 +1025,164 @@
             drawOverlay(previewCtx, previewCanvas.width, previewCanvas.height);
         }
 
-        // 오버레이 그리기 (PGA 방송 스타일)
+        // 오버레이 그리기 (모바일 최적화)
         function drawOverlay(ctx, canvasWidth, canvasHeight) {
             const scale = Math.min(canvasWidth, canvasHeight) / 1000;
-            const padding = 20 * scale;
+            const padding = 15 * scale;
 
             // 현재 시간
             const now = new Date();
             const timeString = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
 
-            // 1. 상단 중앙 - 홀 번호와 시간 (PGA 스타일)
+            // 1. 상단 중앙 - 홀 번호와 시간 (모바일 최적화 크기)
             const holeNumber = document.getElementById('holeNumber').value;
-            const topBarWidth = 300 * scale;
-            const topBarHeight = 70 * scale;
+            const topBarWidth = 260 * scale;
+            const topBarHeight = 60 * scale;
             const topBarX = (canvasWidth - topBarWidth) / 2;
             const topBarY = padding;
 
-            // 상단 바 배경 (고급스러운 그라데이션)
+            // 상단 바 배경
             const topGradient = ctx.createLinearGradient(topBarX, topBarY, topBarX, topBarY + topBarHeight);
             topGradient.addColorStop(0, 'rgba(15, 76, 129, 0.95)');
             topGradient.addColorStop(0.5, 'rgba(9, 132, 227, 0.9)');
             topGradient.addColorStop(1, 'rgba(30, 144, 255, 0.95)');
             ctx.fillStyle = topGradient;
-            roundRect(ctx, topBarX, topBarY, topBarWidth, topBarHeight, 8 * scale);
+            roundRect(ctx, topBarX, topBarY, topBarWidth, topBarHeight, 6 * scale);
             ctx.fill();
 
             // 상단 바 테두리
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.lineWidth = 2 * scale;
-            roundRect(ctx, topBarX, topBarY, topBarWidth, topBarHeight, 8 * scale);
+            ctx.lineWidth = 1.5 * scale;
+            roundRect(ctx, topBarX, topBarY, topBarWidth, topBarHeight, 6 * scale);
             ctx.stroke();
 
             // PAR 4 표시
             ctx.fillStyle = 'white';
-            ctx.font = `bold ${16 * scale}px Arial`;
+            ctx.font = `bold ${14 * scale}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('PAR 4', topBarX + topBarWidth/2, topBarY + 22 * scale);
+            ctx.fillText('PAR 4', topBarX + topBarWidth/2, topBarY + 18 * scale);
 
-            // 홀 번호 (크게)
-            ctx.font = `bold ${32 * scale}px Arial`;
-            ctx.fillText(holeNumber, topBarX + 60 * scale, topBarY + 50 * scale);
+            // 홀 번호
+            ctx.font = `bold ${28 * scale}px Arial`;
+            ctx.fillText(holeNumber, topBarX + 50 * scale, topBarY + 42 * scale);
 
             // 시간
-            ctx.font = `${14 * scale}px Arial`;
-            ctx.fillText(timeString, topBarX + topBarWidth - 60 * scale, topBarY + 25 * scale);
-
-            // "9월 14일 일요일" 날짜
-            const dateString = now.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' });
             ctx.font = `${12 * scale}px Arial`;
-            ctx.fillText(dateString, topBarX + topBarWidth - 60 * scale, topBarY + 45 * scale);
+            ctx.fillText(timeString, topBarX + topBarWidth - 50 * scale, topBarY + 22 * scale);
 
-            // 2. 왼쪽 상단 - 골프장 이름 (상단 바와 같은 높이)
+            // 날짜
+            const dateString = now.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' });
+            ctx.font = `${10 * scale}px Arial`;
+            ctx.fillText(dateString, topBarX + topBarWidth - 50 * scale, topBarY + 38 * scale);
+
+            // 2. 왼쪽 상단 - 골프장 이름
             const courseName = document.getElementById('courseName').value;
             if (courseName) {
-                const courseWidth = 250 * scale;
-                const courseHeight = 50 * scale;
+                const courseWidth = 220 * scale;
+                const courseHeight = 45 * scale;
                 const courseX = padding;
                 const courseY = padding;
 
-                // 배경 (상단 바와 비슷한 스타일)
+                // 배경
                 const courseGradient = ctx.createLinearGradient(courseX, courseY, courseX, courseY + courseHeight);
                 courseGradient.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
                 courseGradient.addColorStop(1, 'rgba(0, 0, 0, 0.75)');
                 ctx.fillStyle = courseGradient;
-                roundRect(ctx, courseX, courseY, courseWidth, courseHeight, 8 * scale);
+                roundRect(ctx, courseX, courseY, courseWidth, courseHeight, 6 * scale);
                 ctx.fill();
 
                 // 테두리
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.lineWidth = 2 * scale;
-                roundRect(ctx, courseX, courseY, courseWidth, courseHeight, 8 * scale);
+                ctx.lineWidth = 1.5 * scale;
+                roundRect(ctx, courseX, courseY, courseWidth, courseHeight, 6 * scale);
                 ctx.stroke();
 
                 // 텍스트
                 ctx.fillStyle = 'white';
-                ctx.font = `bold ${18 * scale}px Arial`;
+                ctx.font = `bold ${16 * scale}px Arial`;
                 ctx.textAlign = 'center';
-                ctx.fillText(courseName, courseX + courseWidth/2, courseY + 32 * scale);
+                ctx.fillText(courseName, courseX + courseWidth/2, courseY + 28 * scale);
             }
 
-            // 3. 오른쪽 상단 - 클럽 이름 (상단 바와 같은 높이)
+            // 3. 오른쪽 상단 - 클럽 이름
             const clubName = document.getElementById('clubName').value;
             if (clubName) {
-                const clubWidth = 180 * scale;
-                const clubHeight = 50 * scale;
+                const clubWidth = 160 * scale;
+                const clubHeight = 45 * scale;
                 const clubX = canvasWidth - clubWidth - padding;
                 const clubY = padding;
 
-                // 클럽 배경 (녹색 그라데이션)
+                // 클럽 배경
                 const clubGradient = ctx.createLinearGradient(clubX, clubY, clubX, clubY + clubHeight);
                 clubGradient.addColorStop(0, '#4CAF50');
                 clubGradient.addColorStop(0.5, '#388E3C');
                 clubGradient.addColorStop(1, '#2E7D32');
                 ctx.fillStyle = clubGradient;
-                roundRect(ctx, clubX, clubY, clubWidth, clubHeight, 8 * scale);
+                roundRect(ctx, clubX, clubY, clubWidth, clubHeight, 6 * scale);
                 ctx.fill();
 
                 // 테두리
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.lineWidth = 2 * scale;
-                roundRect(ctx, clubX, clubY, clubWidth, clubHeight, 8 * scale);
+                ctx.lineWidth = 1.5 * scale;
+                roundRect(ctx, clubX, clubY, clubWidth, clubHeight, 6 * scale);
                 ctx.stroke();
 
                 // 클럽 텍스트
                 ctx.fillStyle = 'white';
-                ctx.font = `bold ${20 * scale}px Arial`;
+                ctx.font = `bold ${18 * scale}px Arial`;
                 ctx.textAlign = 'center';
-                ctx.fillText(clubName, clubX + clubWidth/2, clubY + 32 * scale);
+                ctx.fillText(clubName, clubX + clubWidth/2, clubY + 28 * scale);
             }
 
-            // 4. 오른쪽 하단 - PGA 스타일 스코어보드
-            const scoreWidth = 380 * scale;
-            const headerHeight = 45 * scale;
-            const rowHeight = 45 * scale;
-            const scoreHeight = headerHeight + (players.length * rowHeight) + 10 * scale;
+            // 4. 오른쪽 하단 - 모바일 최적화 스코어보드
+            const scoreWidth = 340 * scale;
+            const headerHeight = 40 * scale;
+            const rowHeight = 40 * scale;
+            const scoreHeight = headerHeight + (players.length * rowHeight) + 8 * scale;
             const scoreX = canvasWidth - scoreWidth - padding;
             const scoreY = canvasHeight - scoreHeight - padding;
 
             // 메인 스코어보드 배경
             ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-            roundRect(ctx, scoreX, scoreY, scoreWidth, scoreHeight, 12 * scale);
+            roundRect(ctx, scoreX, scoreY, scoreWidth, scoreHeight, 10 * scale);
             ctx.fill();
 
-            // 헤더 배경 (PGA 스타일 블루 그라데이션)
+            // 헤더 배경
             const headerGradient = ctx.createLinearGradient(scoreX, scoreY, scoreX, scoreY + headerHeight);
             headerGradient.addColorStop(0, '#1565C0');
             headerGradient.addColorStop(0.5, '#1976D2');
             headerGradient.addColorStop(1, '#1E88E5');
             ctx.fillStyle = headerGradient;
-            roundRect(ctx, scoreX, scoreY, scoreWidth, headerHeight, [12 * scale, 12 * scale, 0, 0]);
+            roundRect(ctx, scoreX, scoreY, scoreWidth, headerHeight, [10 * scale, 10 * scale, 0, 0]);
             ctx.fill();
 
             // 헤더 구분선
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
             ctx.lineWidth = 1 * scale;
             ctx.beginPath();
-            ctx.moveTo(scoreX + 50 * scale, scoreY + 10 * scale);
-            ctx.lineTo(scoreX + 50 * scale, scoreY + headerHeight - 10 * scale);
-            ctx.moveTo(scoreX + 200 * scale, scoreY + 10 * scale);
-            ctx.lineTo(scoreX + 200 * scale, scoreY + headerHeight - 10 * scale);
-            ctx.moveTo(scoreX + 280 * scale, scoreY + 10 * scale);
-            ctx.lineTo(scoreX + 280 * scale, scoreY + headerHeight - 10 * scale);
+            ctx.moveTo(scoreX + 45 * scale, scoreY + 8 * scale);
+            ctx.lineTo(scoreX + 45 * scale, scoreY + headerHeight - 8 * scale);
+            ctx.moveTo(scoreX + 180 * scale, scoreY + 8 * scale);
+            ctx.lineTo(scoreX + 180 * scale, scoreY + headerHeight - 8 * scale);
+            ctx.moveTo(scoreX + 250 * scale, scoreY + 8 * scale);
+            ctx.lineTo(scoreX + 250 * scale, scoreY + headerHeight - 8 * scale);
             ctx.stroke();
 
             // 헤더 텍스트
             ctx.fillStyle = 'white';
-            ctx.font = `bold ${14 * scale}px Arial`;
+            ctx.font = `bold ${12 * scale}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('#', scoreX + 25 * scale, scoreY + 28 * scale);
-            ctx.fillText('PLAYER', scoreX + 125 * scale, scoreY + 28 * scale);
-            ctx.fillText('SPT', scoreX + 240 * scale, scoreY + 28 * scale);
-            ctx.fillText('TOTAL', scoreX + 330 * scale, scoreY + 28 * scale);
+            ctx.fillText('#', scoreX + 22 * scale, scoreY + 25 * scale);
+            ctx.fillText('PLAYER', scoreX + 112 * scale, scoreY + 25 * scale);
+            ctx.fillText('SPT', scoreX + 215 * scale, scoreY + 25 * scale);
+            ctx.fillText('TOTAL', scoreX + 295 * scale, scoreY + 25 * scale);
 
             // 플레이어 행들
             players.forEach((player, index) => {
                 const playerY = scoreY + headerHeight + (index * rowHeight);
                 const isLeader = index === 0;
 
-                // 행 배경 (리더는 하이라이트)
+                // 행 배경
                 if (isLeader) {
                     const leaderGradient = ctx.createLinearGradient(scoreX, playerY, scoreX, playerY + rowHeight);
                     leaderGradient.addColorStop(0, 'rgba(255, 193, 7, 0.2)');
@@ -1211,52 +1197,52 @@
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
                 ctx.lineWidth = 1 * scale;
                 ctx.beginPath();
-                ctx.moveTo(scoreX + 50 * scale, playerY);
-                ctx.lineTo(scoreX + 50 * scale, playerY + rowHeight);
-                ctx.moveTo(scoreX + 200 * scale, playerY);
-                ctx.lineTo(scoreX + 200 * scale, playerY + rowHeight);
-                ctx.moveTo(scoreX + 280 * scale, playerY);
-                ctx.lineTo(scoreX + 280 * scale, playerY + rowHeight);
+                ctx.moveTo(scoreX + 45 * scale, playerY);
+                ctx.lineTo(scoreX + 45 * scale, playerY + rowHeight);
+                ctx.moveTo(scoreX + 180 * scale, playerY);
+                ctx.lineTo(scoreX + 180 * scale, playerY + rowHeight);
+                ctx.moveTo(scoreX + 250 * scale, playerY);
+                ctx.lineTo(scoreX + 250 * scale, playerY + rowHeight);
                 ctx.stroke();
 
-                // 순위 (동그라미 배지)
-                const rankCircleSize = 24 * scale;
+                // 순위
+                const rankCircleSize = 20 * scale;
                 ctx.fillStyle = isLeader ? '#FFD700' : '#64B5F6';
                 ctx.beginPath();
-                ctx.arc(scoreX + 25 * scale, playerY + rowHeight/2, rankCircleSize/2, 0, Math.PI * 2);
+                ctx.arc(scoreX + 22 * scale, playerY + rowHeight/2, rankCircleSize/2, 0, Math.PI * 2);
                 ctx.fill();
 
                 // 순위 숫자
                 ctx.fillStyle = isLeader ? '#000' : 'white';
-                ctx.font = `bold ${16 * scale}px Arial`;
+                ctx.font = `bold ${14 * scale}px Arial`;
                 ctx.textAlign = 'center';
-                ctx.fillText(`${index + 1}`, scoreX + 25 * scale, playerY + rowHeight/2 + 5 * scale);
+                ctx.fillText(`${index + 1}`, scoreX + 22 * scale, playerY + rowHeight/2 + 4 * scale);
 
                 // 플레이어 이름
                 ctx.fillStyle = 'white';
-                ctx.font = `bold ${18 * scale}px Arial`;
+                ctx.font = `bold ${16 * scale}px Arial`;
                 ctx.textAlign = 'center';
-                ctx.fillText(player.name, scoreX + 125 * scale, playerY + rowHeight/2 + 6 * scale);
+                ctx.fillText(player.name, scoreX + 112 * scale, playerY + rowHeight/2 + 5 * scale);
 
-                // 스코어 (SPT)
+                // 스코어
                 const scoreText = player.score > 0 ? `+${player.score}` : player.score === 0 ? 'E' : `${player.score}`;
                 ctx.fillStyle = player.score < 0 ? '#4CAF50' : player.score > 0 ? '#F44336' : '#FFF';
-                ctx.font = `bold ${20 * scale}px Arial`;
+                ctx.font = `bold ${18 * scale}px Arial`;
                 ctx.textAlign = 'center';
-                ctx.fillText(scoreText, scoreX + 240 * scale, playerY + rowHeight/2 + 6 * scale);
+                ctx.fillText(scoreText, scoreX + 215 * scale, playerY + rowHeight/2 + 5 * scale);
 
-                // 총타수 (OS)
+                // 총타수
                 ctx.fillStyle = 'white';
-                ctx.font = `bold ${20 * scale}px Arial`;
+                ctx.font = `bold ${18 * scale}px Arial`;
                 ctx.textAlign = 'center';
-                ctx.fillText(player.total, scoreX + 330 * scale, playerY + rowHeight/2 + 6 * scale);
+                ctx.fillText(player.total, scoreX + 295 * scale, playerY + rowHeight/2 + 5 * scale);
             });
 
             // 스코어보드 하단 브랜딩
             ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.font = `${12 * scale}px Arial`;
+            ctx.font = `${10 * scale}px Arial`;
             ctx.textAlign = 'right';
-            ctx.fillText('LIVE', scoreX + scoreWidth - 10 * scale, scoreY + scoreHeight - 8 * scale);
+            ctx.fillText('LIVE', scoreX + scoreWidth - 8 * scale, scoreY + scoreHeight - 6 * scale);
         }
 
         // RoundRect 헬퍼 함수
@@ -1280,7 +1266,7 @@
             ctx.closePath();
         }
 
-        // 다운로드 (개선된 버전)
+        // 다운로드
         document.getElementById('downloadBtn').addEventListener('click', () => {
             if (!capturedImage) {
                 alert('먼저 사진을 촬영해주세요!');
@@ -1288,7 +1274,6 @@
             }
 
             try {
-                // 미리보기 업데이트 후 다운로드
                 updatePreview();
 
                 const timestamp = new Date().toISOString().slice(0, 19).replace(/[-:]/g, '').replace('T', '_');
@@ -1307,7 +1292,6 @@
 
                         alert(`이미지가 저장되었습니다: ${filename}`);
                     } else {
-                        // 백업 방법
                         const link = document.createElement('a');
                         link.download = filename;
                         link.href = previewCanvas.toDataURL('image/jpeg', 0.95);
@@ -1383,11 +1367,11 @@
             }, 500);
         });
 
-        // 초기화 - 데이터 로드 후 UI 업데이트
+        // 초기화
         loadData();
         updatePlayersList();
 
-        // 코스 정보 변경 시 미리보기 업데이트 및 자동 저장
+        // 코스 정보 변경 시 업데이트
         document.getElementById('clubName').addEventListener('input', () => {
             updatePreview();
             saveData();
@@ -1407,6 +1391,15 @@
             e.preventDefault();
             deferredPrompt = e;
         });
+
+        // Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js').then(registration => {
+                console.log('Service Worker registered:', registration);
+            }).catch(error => {
+                console.log('Service Worker registration failed:', error);
+            });
+        }
     </script>
 </body>
 </html>
